@@ -2,10 +2,9 @@
   "name": "react-game-of-life-2",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "test": "jest",
-    "start": "parcel watch ./public/index.html"
+    "start": "parcel serve ./public/index.html"
   },
   "author": "Anna",
   "license": "ISC",
