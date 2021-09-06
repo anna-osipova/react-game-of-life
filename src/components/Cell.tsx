@@ -20,6 +20,9 @@ export const Cell = (props: CellProps) => {
       width={CELL_WIDTH}
       height={CELL_HEIGHT}
       fill={status === CellState.Dead ? 'black' : 'red'}
+      stroke="grey"
+      strokeWidth={1}
+      cornerRadius={2}
     />
   );
 };
