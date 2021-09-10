@@ -1,38 +1,76 @@
 import * as React from 'react';
-import produce from 'immer';
 
 import { CellState } from '../types';
 import { Cell } from './Cell';
 
-const BOARD_SIZE = 100;
+const BOARD_SIZE = { width: 10, height: 10 };
 
 export const Game = () => {
   const [gameState, setGameState] = React.useState<CellState[][]>(
-    Array(BOARD_SIZE)
-      .fill(0)
-      .map(() => Array(BOARD_SIZE).fill(CellState.Dead))
+    Array.from({ length: BOARD_SIZE.width }, () =>
+      Array.from({ length: BOARD_SIZE.height }, () => CellState.Dead)
+    )
   );
+  const [lastToggle, setLastToggle] = React.useState<[number, number][]>([]);
 
-  const toggleCell = (x: number, y: number) => {
-    const nextGameState = produce(gameState, (draftGameState) => {
-      draftGameState[x][y] = gameState[x][y] === CellState.Alive ? CellState.Dead : CellState.Alive;
+  const toggleCells = (toToggle: [number, number][]) => {
+    toToggle.forEach(([x, y]) => {
+      gameState[x][y] = gameState[x][y] === CellState.Alive ? CellState.Dead : CellState.Alive;
     });
-    setGameState(nextGameState);
+  };
+
+  const getNeighbours = (x: number, y: number): CellState[] => {
+    const neighbours: CellState[] = [];
+    for (let i = -1; i < 2; i++) {
+      for (let j = -1; j < 2; j++) {
+        if (i === 0 && j === 0) continue;
+        if (x + i < 0 || x + i >= BOARD_SIZE.width || y + j < 0 || y + j >= BOARD_SIZE.width)
+          continue;
+        neighbours.push(gameState[x + i][y + j]);
+      }
+    }
+    return neighbours;
+  };
+
+  const getLiveDeadNeighbours = (x: number, y: number): number => {
+    const neighbours = getNeighbours(x, y);
+    return neighbours.reduce((total, cell) => total + cell, 0);
+  };
+
+  const nextTurn = () => {
+    const toToggle: [number, number][] = [];
+
+    gameState.forEach((row, x) => {
+      row.forEach((cell, y) => {
+        const liveNeighbours = getLiveDeadNeighbours(x, y);
+
+        if (cell && liveNeighbours < 2) {
+          toToggle.push([x, y]);
+        } else if (cell && liveNeighbours > 3) {
+          toToggle.push([x, y]);
+        } else if (!cell && liveNeighbours === 3) {
+          toToggle.push([x, y]);
+        }
+      });
+    });
+    toggleCells(toToggle);
+    setLastToggle(toToggle);
   };
 
   React.useEffect(() => {
-    toggleCell(10, 10);
-    toggleCell(11, 10);
-  }, []);
+    toggleCells([
+      [5, 4],
+      [5, 5],
+      [5, 6]
+    ]);
 
-  React.useEffect(() => {
     const id = setInterval(() => {
-      toggleCell(Math.floor(Math.random() * BOARD_SIZE), Math.floor(Math.random() * BOARD_SIZE));
-    }, 500);
+      nextTurn();
+    }, 800);
     return () => {
       clearInterval(id);
     };
-  });
+  }, []);
 
   return (
     <>

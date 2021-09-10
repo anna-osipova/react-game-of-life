@@ -1,4 +1,4 @@
 export enum CellState {
-  Alive = 'Alive',
-  Dead = 'Dead'
+  Alive = 1,
+  Dead = 0
 }
